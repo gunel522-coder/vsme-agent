@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VSME Environmental Reporting Agent — AI Prototype</title>
+<style>
+  :root {
+    --green-dark: #0F6E56; --green-mid: #1D9E75; --green-light: #E1F5EE;
+    --amber-dark: #854F0B; --amber-light: #FAEEDA;
+    --red-dark: #A32D2D; --red-light: #FCEBEB;
+    --purple-dark: #3C3489; --purple-light: #EEEDFE;
+    --gray-dark: #444441; --gray-mid: #888780; --gray-light: #F1EFE8;
+    --border: #D3D1C7; --black: #2C2C2A; --white: #ffffff;
+    --surface: #F8F7F3; --card: #ffffff;
+    --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body { font-family: var(--font); background: var(--surface); color: var(--black); min-height: 100vh; }
+
+  /* ── Header ── */
+  .site-header { background: var(--green-dark); padding: 0 2rem; position: sticky; top: 0; z-index: 100; box-shadow: 0 1px 8px rgba(0,0,0,.15); }
+  .header-inner { max-width: 900px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; height: 52px; }
+  .logo { display: flex; align-items: center; gap: 10px; color: white; font-size: 14px; font-weight: 600; }
+  .logo-leaf { width: 26px; height: 26px; background: var(--green-mid); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+  .header-badge { font-size: 11px; background: rgba(255,255,255,.15); color: rgba(255,255,255,.9); padding: 3px 10px; border-radius: 20px; font-weight: 500; }
+
+  /* ── Hero ── */
+  .hero { background: linear-gradient(135deg, var(--green-dark) 0%, #0a4f3e 100%); color: white; padding: 4rem 2rem 3rem; text-align: center; }
+  .hero-eyebrow { font-size: 11px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: #5DCAA5; margin-bottom: 12px; }
+  .hero h1 { font-size: clamp(24px, 5vw, 36px); font-weight: 700; line-height: 1.2; margin-bottom: 14px; }
+  .hero h1 span { color: #9FE1CB; }
+  .hero-sub { font-size: 15px; color: rgba(255,255,255,.8); max-width: 560px; margin: 0 auto 28px; line-height: 1.7; }
+  .hero-badges { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-bottom: 32px; }
+  .h-badge { font-size: 12px; font-weight: 500; padding: 5px 12px; border-radius: 20px; background: rgba(255,255,255,.12); color: rgba(255,255,255,.9); border: 1px solid rgba(255,255,255,.2); }
+  .hero-cta { background: var(--green-mid); color: white; border: none; padding: 13px 32px; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; font-family: var(--font); transition: background .15s; display: inline-flex; align-items: center; gap: 8px; }
+  .hero-cta:hover { background: #159e72; }
+  .hero-note { font-size: 12px; color: rgba(255,255,255,.5); margin-top: 12px; }
+
+  /* ── Layout ── */
+  .main { max-width: 900px; margin: 0 auto; padding: 2.5rem 1.5rem; }
+
+  /* ── How it works ── */
+  .steps-section { margin-bottom: 3rem; }
+  .section-title { font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--green-dark); margin-bottom: 6px; }
+  .section-h { font-size: 22px; font-weight: 700; color: var(--black); margin-bottom: 8px; }
+  .section-sub { font-size: 14px; color: var(--gray-dark); line-height: 1.6; margin-bottom: 24px; }
+  .steps-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; }
+  .step-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 18px; position: relative; }
+  .step-card::before { content: attr(data-num); position: absolute; top: 14px; right: 14px; font-size: 11px; font-weight: 700; color: var(--gray-mid); background: var(--gray-light); padding: 2px 8px; border-radius: 10px; }
+  .step-icon { width: 36px; height: 36px; border-radius: 8px; background: var(--green-light); display: flex; align-items: center; justify-content: center; font-size: 18px; margin-bottom: 10px; }
+  .step-title { font-size: 13px; font-weight: 600; color: var(--black); margin-bottom: 4px; }
+  .step-desc { font-size: 12px; color: var(--gray-dark); line-height: 1.5; }
+  .step-ref { display: inline-block; margin-top: 6px; font-size: 10px; font-weight: 600; background: var(--green-light); color: var(--green-dark); padding: 2px 7px; border-radius: 8px; }
+
+  /* ── Agent wrapper ── */
+  .agent-section { margin-bottom: 3rem; }
+  .agent-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,.06); }
+  .agent-topbar { background: var(--green-dark); padding: 12px 18px; display: flex; align-items: center; gap: 10px; }
+  .agent-topbar-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .agent-topbar span { font-size: 12px; color: rgba(255,255,255,.8); font-weight: 500; margin-left: 6px; }
+  .agent-body { padding: 0; }
+
+  /* ── Pipeline ── */
+  .pipeline { display: flex; align-items: center; gap: 0; padding: 14px 18px; background: #FAFAF8; border-bottom: 1px solid var(--border); overflow-x: auto; }
+  .pipe-step { display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; padding: 6px 8px; border-radius: 8px; min-width: 68px; transition: background .15s; }
+  .pipe-step:hover:not(.locked) { background: var(--green-light); }
+  .pipe-step.active { background: var(--green-light); }
+  .pipe-step.locked { opacity: .35; cursor: default; }
+  .pipe-icon { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; border: 1.5px solid var(--border); background: white; }
+  .pipe-step.active .pipe-icon { background: var(--green-mid); border-color: var(--green-mid); }
+  .pipe-step.done .pipe-icon { background: var(--green-light); border-color: var(--green-mid); }
+  .pipe-label { font-size: 9px; font-weight: 600; color: var(--gray-mid); text-align: center; line-height: 1.3; }
+  .pipe-step.active .pipe-label { color: var(--green-dark); }
+  .pipe-arrow { color: var(--border); font-size: 14px; padding-bottom: 12px; flex-shrink: 0; }
+  .prog-bar { height: 3px; background: var(--border); }
+  .prog-fill { height: 100%; background: var(--green-mid); transition: width .4s; }
+
+  /* ── Step content ── */
+  .step-content { padding: 22px 22px 18px; }
+  .step-header { margin-bottom: 16px; }
+  .step-eyebrow { font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--green-mid); margin-bottom: 3px; }
+  .step-title-main { font-size: 16px; font-weight: 700; color: var(--black); margin-bottom: 4px; }
+  .step-desc-main { font-size: 13px; color: var(--gray-dark); line-height: 1.5; }
+
+  /* ── Form elements ── */
+  .field { margin-bottom: 14px; }
+  .field label { display: block; font-size: 12px; font-weight: 600; color: var(--gray-dark); margin-bottom: 5px; }
+  .field .req { color: #E24B4A; }
+  .field .hint { font-size: 11px; color: var(--gray-mid); margin-top: 3px; }
+  input[type=text], input[type=number], input[type=email], select, textarea {
+    width: 100%; font-family: var(--font); font-size: 13px; padding: 9px 12px;
+    border: 1.5px solid var(--border); border-radius: 8px; background: white;
+    color: var(--black); transition: border-color .15s; outline: none;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--green-mid); }
+  textarea { resize: vertical; min-height: 70px; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+  @media(max-width:600px) { .grid2, .grid3 { grid-template-columns: 1fr; } }
+
+  /* ── Y/N toggle ── */
+  .yn { display: flex; gap: 6px; margin-top: 4px; }
+  .yn button { flex: 1; padding: 8px; font-size: 12px; font-weight: 600; border: 1.5px solid var(--border); border-radius: 8px; background: white; color: var(--gray-dark); cursor: pointer; font-family: var(--font); transition: all .15s; }
+  .yn .y.sel { background: var(--green-light); color: var(--green-dark); border-color: var(--green-mid); }
+  .yn .n.sel { background: var(--red-light); color: var(--red-dark); border-color: #E24B4A; }
+  .yn .u.sel { background: var(--amber-light); color: var(--amber-dark); border-color: #EF9F27; }
+
+  /* ── Notice boxes ── */
+  .notice { padding: 10px 14px; border-radius: 0 8px 8px 0; font-size: 12.5px; line-height: 1.6; margin: 10px 0; }
+  .notice.info { background: var(--green-light); border-left: 3px solid var(--green-mid); color: #085041; }
+  .notice.warn { background: var(--amber-light); border-left: 3px solid #EF9F27; color: var(--amber-dark); }
+  .notice.gap  { background: var(--red-light);   border-left: 3px solid #E24B4A;  color: var(--red-dark); }
+  .notice.pu   { background: var(--purple-light); border-left: 3px solid #7F77DD;  color: var(--purple-dark); }
+
+  /* ── Section nav tabs ── */
+  .snav { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+  .snav button { font-size: 11px; font-weight: 600; padding: 5px 11px; border-radius: 20px; border: 1.5px solid var(--border); background: white; color: var(--gray-dark); cursor: pointer; font-family: var(--font); transition: all .15s; }
+  .snav button.active { background: var(--green-mid); color: white; border-color: var(--green-mid); }
+  .stab { display: none; } .stab.show { display: block; }
+
+  /* ── AI output ── */
+  .ai-panel { background: #FAFAF8; border: 1px solid var(--border); border-radius: 10px; padding: 16px; margin-bottom: 14px; }
+  .ai-head { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+  .ai-avatar { width: 24px; height: 24px; border-radius: 50%; background: var(--green-mid); display: flex; align-items: center; justify-content: center; color: white; font-size: 11px; font-weight: 700; flex-shrink: 0; }
+  .ai-name { font-size: 12px; font-weight: 600; color: var(--black); }
+  .ai-step-label { font-size: 11px; color: var(--gray-mid); }
+  .ai-body { font-size: 13px; color: var(--black); line-height: 1.7; }
+  .ai-body h4 { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--green-dark); margin: 10px 0 4px; }
+  .ai-body p { margin-bottom: 6px; }
+  .ai-body ul { padding-left: 16px; margin: 4px 0; }
+  .ai-body li { margin: 2px 0; font-size: 12.5px; }
+  .out-table { width: 100%; border-collapse: collapse; font-size: 11.5px; margin: 8px 0; }
+  .out-table th { background: var(--green-light); color: var(--green-dark); font-weight: 600; padding: 6px 8px; text-align: left; border: 1px solid #9FE1CB; }
+  .out-table td { padding: 5px 8px; border: 1px solid var(--border); vertical-align: top; line-height: 1.4; }
+  .out-table tr:nth-child(even) td { background: #FAFAF8; }
+  .tag { display: inline-block; font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 10px; }
+  .t-ready   { background: #EAF3DE; color: #3B6D11; }
+  .t-partial { background: var(--amber-light); color: var(--amber-dark); }
+  .t-notready{ background: var(--red-light); color: var(--red-dark); }
+  .t-na      { background: var(--gray-light); color: var(--gray-mid); border: 1px solid var(--border); }
+
+  /* ── Buttons ── */
+  .btn-row { display: flex; gap: 10px; justify-content: space-between; align-items: center; margin-top: 18px; flex-wrap: wrap; }
+  .btn-primary { background: var(--green-mid); color: white; border: none; border-radius: 8px; padding: 10px 22px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: var(--font); transition: background .15s; display: inline-flex; align-items: center; gap: 6px; }
+  .btn-primary:hover { background: var(--green-dark); }
+  .btn-primary:disabled { background: var(--border); color: var(--gray-mid); cursor: not-allowed; }
+  .btn-secondary { background: white; color: var(--black); border: 1.5px solid var(--border); border-radius: 8px; padding: 9px 16px; font-size: 13px; cursor: pointer; font-family: var(--font); transition: all .15s; }
+  .btn-secondary:hover { border-color: var(--gray-mid); }
+
+  /* ── Spinner ── */
+  .spin { display: inline-flex; gap: 3px; align-items: center; }
+  .spin span { width: 5px; height: 5px; border-radius: 50%; background: var(--green-mid); animation: sp 1.2s infinite; }
+  .spin span:nth-child(2){animation-delay:.2s} .spin span:nth-child(3){animation-delay:.4s}
+  @keyframes sp{0%,80%,100%{opacity:.2}40%{opacity:1}}
+
+  /* ── Log ── */
+  .log-wrap { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 12px; }
+  .log-title { font-size: 11px; font-weight: 700; color: var(--gray-mid); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 6px; display: flex; justify-content: space-between; }
+  .log-box { background: #1a1a18; border-radius: 8px; padding: 10px 12px; max-height: 160px; overflow-y: auto; font-family: 'Courier New', monospace; }
+  .log-entry { font-size: 11px; line-height: 1.6; }
+  .log-entry .lt { color: #5DCAA5; }
+  .log-entry .la { font-weight: 700; }
+  .log-entry .la.human { color: #AFA9EC; }
+  .log-entry .la.ai    { color: #9FE1CB; }
+  .log-entry .la.sys   { color: #888780; }
+  .log-entry .lm { color: #D3D1C7; }
+
+  /* ── Evaluation cards ── */
+  .eval-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px,1fr)); gap: 10px; margin: 14px 0; }
+  .eval-card { background: white; border: 1px solid var(--border); border-radius: 10px; padding: 14px; }
+  .eval-card-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--gray-mid); margin-bottom: 4px; }
+  .eval-card-val { font-size: 22px; font-weight: 700; color: var(--black); }
+  .eval-card-sub { font-size: 11px; color: var(--gray-mid); margin-top: 3px; line-height: 1.4; }
+  .score-bar { height: 3px; border-radius: 2px; margin-top: 6px; background: var(--border); }
+  .score-fill { height: 100%; border-radius: 2px; background: var(--green-mid); }
+
+  /* ── Footer ── */
+  footer { background: var(--green-dark); color: rgba(255,255,255,.7); text-align: center; padding: 2rem 1rem; font-size: 12px; line-height: 1.7; }
+  footer a { color: #9FE1CB; text-decoration: none; }
+  footer .footer-title { font-size: 14px; font-weight: 600; color: white; margin-bottom: 6px; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="site-header">
+  <div class="header-inner">
+    <div class="logo">
+      <div class="logo-leaf">🌿</div>
+      VSME Reporting Agent
+    </div>
+    <span class="header-badge">Master's Thesis Prototype · EFRAG VSME Dec 2024</span>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-eyebrow">AI-Assisted Sustainability Reporting for SMEs</div>
+  <h1>Prepare your <span>VSME environmental</span><br>report section with AI</h1>
+  <p class="hero-sub">A structured 7-step agent that maps your company data to the EFRAG VSME Standard (December 2024), identifies gaps, and drafts the environmental section — ready for human review.</p>
+  <div class="hero-badges">
+    <span class="h-badge">🌿 VSME Basic Module B1–B7</span>
+    <span class="h-badge">🤖 AI-powered draft generation</span>
+    <span class="h-badge">✅ EFRAG December 2024</span>
+    <span class="h-badge">📊 Interaction logging</span>
+  </div>
+  <button class="hero-cta" onclick="document.getElementById('agent').scrollIntoView({behavior:'smooth'})">
+    Start the prototype ↓
+  </button>
+  <p class="hero-note">No account required · Works in any browser · Data stays in your session</p>
+</section>
+
+<!-- HOW IT WORKS -->
+<div class="main">
+  <section class="steps-section">
+    <div class="section-title">How it works</div>
+    <div class="section-h">A 7-step agentic pipeline</div>
+    <p class="section-sub">Each step maps to a specific phase of the VSME reporting workflow. The agent guides you through data collection, runs an AI analysis against the standard, drafts the report, and records your corrections for research evaluation.</p>
+    <div class="steps-grid">
+      <div class="step-card" data-num="01">
+        <div class="step-icon">🏭</div>
+        <div class="step-title">Company profile</div>
+        <div class="step-desc">Enter your company's sector, size, location and legal form.</div>
+        <span class="step-ref">B1 §24</span>
+      </div>
+      <div class="step-card" data-num="02">
+        <div class="step-icon">⚡</div>
+        <div class="step-title">Environmental data</div>
+        <div class="step-desc">Input energy, water, waste, materials and transport figures.</div>
+        <span class="step-ref">B3–B7</span>
+      </div>
+      <div class="step-card" data-num="03">
+        <div class="step-icon">🛡️</div>
+        <div class="step-title">Practices & policy</div>
+        <div class="step-desc">Describe your environmental practices, policy and targets.</div>
+        <span class="step-ref">B2 §26</span>
+      </div>
+      <div class="step-card" data-num="04">
+        <div class="step-icon">🤖</div>
+        <div class="step-title">AI analysis</div>
+        <div class="step-desc">The AI maps your data to VSME disclosures and identifies gaps.</div>
+        <span class="step-ref">B1–B7</span>
+      </div>
+      <div class="step-card" data-num="05">
+        <div class="step-icon">📄</div>
+        <div class="step-title">Draft report</div>
+        <div class="step-desc">AI generates a complete environmental report section.</div>
+        <span class="step-ref">All sections</span>
+      </div>
+      <div class="step-card" data-num="06">
+        <div class="step-icon">👤</div>
+        <div class="step-title">Human review</div>
+        <div class="step-desc">You correct, validate and rate the AI output.</div>
+        <span class="step-ref">Research data</span>
+      </div>
+      <div class="step-card" data-num="07">
+        <div class="step-icon">📊</div>
+        <div class="step-title">Evaluation</div>
+        <div class="step-desc">Session metrics, correction rates and usability scores.</div>
+        <span class="step-ref">Thesis output</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- AGENT -->
+  <section class="agent-section" id="agent">
+    <div class="section-title">Live prototype</div>
+    <div class="section-h">Run the agent</div>
+    <p class="section-sub">Enter your company's environmental data below. The agent will analyse it against the VSME standard and generate a structured draft report section. All interactions are logged for research purposes.</p>
+
+    <div class="agent-card">
+      <div class="agent-topbar">
+        <div class="agent-topbar-dot" style="background:#ff5f56"></div>
+        <div class="agent-topbar-dot" style="background:#ffbd2e"></div>
+        <div class="agent-topbar-dot" style="background:#27c93f"></div>
+        <span>VSME Environmental Reporting Agent — Prototype v1.0</span>
+      </div>
+
+      <!-- Pipeline -->
+      <div class="pipeline" id="pipeline">
+        <div class="pipe-step active" id="ps1" onclick="gotoStep(1)">
+          <div class="pipe-icon">🏭</div><div class="pipe-label">Company<br>profile</div>
+        </div>
+        <div class="pipe-arrow">›</div>
+        <div class="pipe-step locked" id="ps2" onclick="gotoStep(2)">
+          <div class="pipe-icon">⚡</div><div class="pipe-label">Env.<br>data</div>
+        </div>
+        <div class="pipe-arrow">›</div>
+        <div class="pipe-step locked" id="ps3" onclick="gotoStep(3)">
+          <div class="pipe-icon">🛡️</div><div class="pipe-label">Practices<br>& policy</div>
+        </div>
+        <div class="pipe-arrow">›</div>
+        <div class="pipe-step locked" id="ps4" onclick="gotoStep(4)">
+          <div class="pipe-icon">🤖</div><div class="pipe-label">AI<br>analysis</div>
+        </div>
+        <div class="pipe-arrow">›</div>
+        <div class="pipe-step locked" id="ps5" onclick="gotoStep(5)">
+          <div class="pipe-icon">📄</div><div class="pipe-label">Draft<br>report</div>
+        </div>
+        <div class="pipe-arrow">›</div>
+        <div class="pipe-step locked" id="ps6" onclick="gotoStep(6)">
+          <div class="pipe-icon">👤</div><div class="pipe-label">Human<br>review</div>
+        </div>
+        <div class="pipe-arrow">›</div>
+        <div class="pipe-step locked" id="ps7" onclick="gotoStep(7)">
+          <div class="pipe-icon">📊</div><div class="pipe-label">Research<br>eval.</div>
+        </div>
+      </div>
+      <div class="prog-bar"><div class="prog-fill" id="progFill" style="width:14%"></div></div>
+
+      <!-- Step content -->
+      <div class="step-content" id="stepContent"></div>
+
+      <!-- Log -->
+      <div class="step-content" style="padding-top:0">
+        <div class="log-wrap">
+          <div class="log-title">
+            <span>⌨️ Interaction log <span style="font-weight:400;text-transform:none;letter-spacing:0">(thesis research data)</span></span>
+            <button onclick="exportLog()" style="background:none;border:none;color:var(--green-dark);font-size:11px;font-weight:700;cursor:pointer;font-family:var(--font);">Export ↗</button>
+          </div>
+          <div class="log-box" id="logBox"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-title">AI-Assisted Sustainability Reporting for SMEs</div>
+  <p>Master's thesis prototype · <em>Preparing the Environmental Section under the VSME Standard</em></p>
+  <p style="margin-top:8px">Built on <a href="https://efrag.org" target="_blank">EFRAG VSME Standard, December 2024</a> · Basic Module B1–B7 · Powered by Claude (Anthropic)</p>
+  <p style="margin-top:10px;font-size:11px;opacity:.7">This prototype is for research purposes only. AI-generated outputs require human expert review before use as a formal sustainability report.</p>
+</footer>
+
+<script>
+const API_KEY_PLACEHOLDER = 'YOUR_ANTHROPIC_API_KEY';
+const STATE = { step:1, max:1, data:{}, log:[], t0: Date.now(), aiOutputs:{} };
+
+function ts(){ const s=Math.floor((Date.now()-STATE.t0)/1000); return `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`; }
+function log(actor,msg){ STATE.log.push({t:ts(),actor,msg,step:STATE.step}); const b=document.getElementById('logBox'); const d=document.createElement('div'); d.className='log-entry'; d.innerHTML=`<span class="lt">[${ts()}]</span> <span class="la ${actor}">${actor.toUpperCase()}</span> <span class="lm">${msg}</span><br>`; b.appendChild(d); b.scrollTop=b.scrollHeight; }
+function exportLog(){ const txt=STATE.log.map(l=>`[${l.t}][Step ${l.step}][${l.actor.toUpperCase()}] ${l.msg}`).join('\n'); const blob=new Blob([`VSME AGENT — INTERACTION LOG\nSession: ${new Date().toISOString()}\n${'='.repeat(60)}\n\n${txt}\n\n${'='.repeat(60)}\nForm data:\n${JSON.stringify(STATE.data,null,2)}`],{type:'text/plain'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`vsme_log_${Date.now()}.txt`; a.click(); log('sys','Interaction log exported'); }
+function gv(id){const el=document.getElementById(id);return el?el.value.trim():'';}
+function sv(){document.querySelectorAll('#stepContent input,#stepContent select,#stepContent textarea').forEach(el=>{if(el.id) STATE.data[el.id]=el.value;});}
+function fv(id,def=''){return STATE.data[id]||def;}
+function yn(id,val,cls){ document.querySelectorAll(`[data-yn="${id}"]`).forEach(b=>b.className=b.dataset.cls); const b=document.querySelector(`[data-yn="${id}"][data-val="${val}"]`); if(b){b.classList.add('sel');} STATE.data[id]=val; log('human',`${id} → "${val}"`); }
+function gotoStep(n){ if(n>STATE.max) return; sv(); STATE.step=n; render(); }
+function nextStep(){ sv(); log('human',`Step ${STATE.step} completed`); STATE.step++; STATE.max=Math.max(STATE.max,STATE.step); render(); window.scrollTo({top:document.getElementById('agent').offsetTop-60,behavior:'smooth'}); }
+function prevStep(){ sv(); STATE.step--; render(); }
+
+function updatePipeline(){
+  const pct=[14,28,42,57,71,85,100];
+  document.getElementById('progFill').style.width=pct[STATE.step-1]+'%';
+  for(let i=1;i<=7;i++){
+    const el=document.getElementById('ps'+i);
+    el.className='pipe-step'+(i===STATE.step?' active':i<STATE.step?' done':i<=STATE.max?'':' locked');
+  }
+}
+
+function render(){ updatePipeline(); const c=document.getElementById('stepContent'); const steps=[null,s1,s2,s3,s4,s5,s6,s7]; steps[STATE.step](c); }
+
+// ── STEP 1 ──────────────────────────────────────────────────────────────────
+function s1(c){ c.innerHTML=`
+<div class="step-header"><div class="step-eyebrow">Step 1 of 7</div><div class="step-title-main">Company profile</div><div class="step-desc-main">General information required by VSME disclosure B1 (§24). Fields marked <span style="color:#E24B4A">*</span> are mandatory.</div></div>
+<div class="grid2">
+  <div class="field"><label>Company name or alias <span class="req">*</span></label><input id="p_name" value="${fv('p_name')}" placeholder="e.g. GreenPack Solutions or Company A"></div>
+  <div class="field"><label>Anonymous output?</label><div class="yn"><button class="y ${fv('p_anon')==='yes'?'sel':''}" data-yn="p_anon" data-val="yes" data-cls="y" onclick="yn('p_anon','yes','y')">Yes</button><button class="n ${fv('p_anon')==='no'?'sel':''}" data-yn="p_anon" data-val="no" data-cls="n" onclick="yn('p_anon','no','n')">No</button></div></div>
+</div>
+<div class="grid2">
+  <div class="field"><label>Sector / business activity <span class="req">*</span></label><input id="p_sector" value="${fv('p_sector')}" placeholder="e.g. Paper-based food packaging manufacturing"></div>
+  <div class="field"><label>NACE code (§24(e)(ii))</label><input id="p_nace" value="${fv('p_nace')}" placeholder="e.g. C17.29"><div class="hint">Section C = Manufacturing → B7 §38(c) mass-flow applies</div></div>
+</div>
+<div class="grid3">
+  <div class="field"><label>Country <span class="req">*</span></label><input id="p_country" value="${fv('p_country')}" placeholder="e.g. Italy"></div>
+  <div class="field"><label>Region / city</label><input id="p_region" value="${fv('p_region')}" placeholder="e.g. Bologna, Emilia-Romagna"></div>
+  <div class="field"><label>Reporting year <span class="req">*</span></label><input id="p_year" type="number" value="${fv('p_year','2025')}" placeholder="2025"></div>
+</div>
+<div class="grid3">
+  <div class="field"><label>Employees (headcount) <span class="req">*</span></label><input id="p_emp" type="number" value="${fv('p_emp')}" placeholder="e.g. 42"><div class="hint">Under 50 = small SME (§2(b))</div></div>
+  <div class="field"><label>Annual turnover (€)</label><input id="p_turnover" type="number" value="${fv('p_turnover')}" placeholder="Required for GHG intensity §31"></div>
+  <div class="field"><label>Legal form (§24(e)(i))</label><select id="p_legal"><option value="">Select…</option><option ${fv('p_legal')==='srl'?'selected':''} value="srl">S.r.l. (Private limited)</option><option ${fv('p_legal')==='spa'?'selected':''} value="spa">S.p.A.</option><option ${fv('p_legal')==='sole'?'selected':''} value="sole">Sole proprietorship</option><option ${fv('p_legal')==='other'?'selected':''} value="other">Other</option></select></div>
+</div>
+<div class="grid2">
+  <div class="field"><label>Site geolocation (§75 — 5 decimal places)</label><input id="p_geo" value="${fv('p_geo')}" placeholder="e.g. 44.49381, 11.34265"><div class="hint">Required for biodiversity (B5) and water stress (B6) checks</div></div>
+  <div class="field"><label>Sustainability certifications (§25)</label><input id="p_certs" value="${fv('p_certs')}" placeholder="e.g. FSC, ISO 14001 — or leave blank"></div>
+</div>
+<div class="btn-row"><span style="font-size:12px;color:var(--gray-mid)">VSME B1 §24 — mandatory datapoints</span><button class="btn-primary" onclick="sub1()">Continue to environmental data →</button></div>`;
+log('sys','Step 1 loaded: Company profile (B1 §24)'); }
+
+function sub1(){ sv(); if(!gv('p_name')||!gv('p_sector')||!gv('p_country')||!gv('p_year')||!gv('p_emp')){alert('Please fill in all required fields (marked *).');return;} log('human',`Profile: ${gv('p_name')}, ${gv('p_emp')} employees, ${gv('p_country')}, ${gv('p_year')}`); nextStep(); }
+
+// ── STEP 2 ──────────────────────────────────────────────────────────────────
+function s2(c){ c.innerHTML=`
+<div class="step-header"><div class="step-eyebrow">Step 2 of 7</div><div class="step-title-main">Environmental data input</div><div class="step-desc-main">Navigate between data categories. Complete as many as you have data for — the AI will flag gaps.</div></div>
+<div class="snav">
+  <button class="active" onclick="showTab('t_energy',this)">⚡ Energy</button>
+  <button onclick="showTab('t_ghg',this)">☁️ GHG</button>
+  <button onclick="showTab('t_water',this)">💧 Water</button>
+  <button onclick="showTab('t_waste',this)">🗑️ Waste</button>
+  <button onclick="showTab('t_materials',this)">📦 Materials</button>
+  <button onclick="showTab('t_transport',this)">🚚 Transport</button>
+</div>
+
+<div id="t_energy" class="stab show">
+  <div class="notice info">B3 §29 — Report in MWh; renewable/non-renewable breakdown required if obtainable (§84). Gas and diesel require conversion via §87 and §89.</div>
+  <div class="grid3">
+    <div class="field"><label>Electricity (kWh)</label><input id="e_elec" type="number" value="${fv('e_elec')}" placeholder="e.g. 48750"></div>
+    <div class="field"><label>Renewable share (%)</label><input id="e_renew" type="number" value="${fv('e_renew')}" placeholder="From utility declaration (§84)"></div>
+    <div class="field"><label>Source</label><select id="e_src"><option value="national grid">National grid</option><option value="green tariff">Green tariff/PPA</option><option value="on-site renewable">On-site renewable</option></select></div>
+  </div>
+  <div class="grid3">
+    <div class="field"><label>Natural gas (m³)</label><input id="e_gas" type="number" value="${fv('e_gas')}" placeholder="e.g. 6200"><div class="hint">§87 MWh conversion required</div></div>
+    <div class="field"><label>Gas converted (MWh) — if done</label><input id="e_gas_mwh" type="number" value="${fv('e_gas_mwh')}" placeholder="e.g. 65.4"></div>
+    <div class="field"><label>Energy efficiency measures</label><input id="e_measures" value="${fv('e_measures')}" placeholder="e.g. LED, motion sensors"></div>
+  </div>
+</div>
+
+<div id="t_ghg" class="stab">
+  <div class="notice info">B3 §30–31 — GHG Protocol. Even if no inventory exists, enter activity data — the AI will generate the gap statement and list §102 emission factor sources.</div>
+  <div class="field"><label>GHG inventory prepared?</label><div class="yn"><button class="y ${fv('g_inv')==='yes'?'sel':''}" data-yn="g_inv" data-val="yes" data-cls="y" onclick="yn('g_inv','yes','y');document.getElementById('g_fields').style.display=''">Yes</button><button class="n ${fv('g_inv')==='no'?'sel':''}" data-yn="g_inv" data-val="no" data-cls="n" onclick="yn('g_inv','no','n');document.getElementById('g_fields').style.display='none'">No</button></div></div>
+  <div id="g_fields" style="${fv('g_inv')==='yes'?'':'display:none'}">
+    <div class="grid3">
+      <div class="field"><label>Scope 1 (tCO₂eq)</label><input id="g_s1" type="number" value="${fv('g_s1')}" placeholder="e.g. 14.2"></div>
+      <div class="field"><label>Scope 2 location-based (tCO₂eq)</label><input id="g_s2" type="number" value="${fv('g_s2')}" placeholder="e.g. 8.5"></div>
+      <div class="field"><label>Emission factor source</label><select id="g_ef"><option value="">Select…</option><option>ADEME Base Empreinte®</option><option>IPCC EF Database</option><option>AIB Residual Mix</option><option>JRC Historical EFs</option><option>National authority (ISPRA)</option></select></div>
+    </div>
+  </div>
+  <div class="field"><label>Reason if no inventory prepared</label><textarea id="g_reason" placeholder="e.g. No emission factors available; first reporting year">${fv('g_reason')}</textarea></div>
+</div>
+
+<div id="t_water" class="stab">
+  <div class="notice info">B6 §35 — Total withdrawal required. Disaggregate by high water-stress sites if WRI Aqueduct baseline >40% (§156).</div>
+  <div class="grid3">
+    <div class="field"><label>Total withdrawal (m³)</label><input id="w_m3" type="number" value="${fv('w_m3')}" placeholder="e.g. 1150"></div>
+    <div class="field"><label>Water source</label><select id="w_src"><option value="municipal supply">Municipal supply</option><option value="groundwater">Groundwater</option><option value="surface water">Surface water</option></select></div>
+    <div class="field"><label>Monitoring method</label><input id="w_mon" value="${fv('w_mon')}" placeholder="e.g. Monthly bill review"></div>
+  </div>
+  <div class="grid3">
+    <div class="field"><label>Water stress area? (§156)</label><div class="yn" style="margin-top:4px"><button class="y ${fv('w_stress')==='yes'?'sel':''}" data-yn="w_stress" data-val="yes" data-cls="y" onclick="yn('w_stress','yes','y')">Yes</button><button class="n ${fv('w_stress')==='no'?'sel':''}" data-yn="w_stress" data-val="no" data-cls="n" onclick="yn('w_stress','no','n')">No</button><button class="u ${fv('w_stress')==='unk'?'sel':''}" data-yn="w_stress" data-val="unk" data-cls="u" onclick="yn('w_stress','unk','u')">Not assessed</button></div></div>
+    <div class="field"><label>Discharge (m³)</label><input id="w_disch" type="number" value="${fv('w_disch')}" placeholder="e.g. 1100 — if known"></div>
+    <div class="field"><label>Discharge route</label><select id="w_route"><option value="">Select…</option><option>Municipal sewer</option><option>On-site treatment</option><option>Water body</option><option>Unknown</option></select></div>
+  </div>
+</div>
+
+<div id="t_waste" class="stab">
+  <div class="notice info">B7 §38(a)–(b) — Report in kg. Distinguish non-hazardous vs hazardous. Per §169, "waste to recycling" = waste sorted and delivered to recycling operator.</div>
+  <div class="grid3">
+    <div class="field"><label>General waste (kg)</label><input id="wst_gen" type="number" value="${fv('wst_gen')}" placeholder="e.g. 3450"><div class="hint">Route: <input id="wst_gen_r" style="font-size:11px;margin-top:3px" placeholder="e.g. landfill" value="${fv('wst_gen_r')}"></div></div>
+    <div class="field"><label>Paper & cardboard (kg)</label><input id="wst_pap" type="number" value="${fv('wst_pap')}" placeholder="e.g. 5800"><div class="hint">Route: <input id="wst_pap_r" style="font-size:11px;margin-top:3px" placeholder="e.g. recycling" value="${fv('wst_pap_r')}"></div></div>
+    <div class="field"><label>Plastics (kg)</label><input id="wst_pla" type="number" value="${fv('wst_pla')}" placeholder="e.g. 1120"><div class="hint">Route: <input id="wst_pla_r" style="font-size:11px;margin-top:3px" placeholder="e.g. sorting" value="${fv('wst_pla_r')}"></div></div>
+  </div>
+  <div class="grid2">
+    <div class="field"><label>Hazardous waste?</label><div class="yn"><button class="y ${fv('wst_haz')==='yes'?'sel':''}" data-yn="wst_haz" data-val="yes" data-cls="y" onclick="yn('wst_haz','yes','y')">Yes</button><button class="n ${fv('wst_haz')==='no'?'sel':''}" data-yn="wst_haz" data-val="no" data-cls="n" onclick="yn('wst_haz','no','n')">No</button></div></div>
+    <div class="field"><label>Hazardous qty (kg)</label><input id="wst_haz_kg" type="number" value="${fv('wst_haz_kg','0')}" placeholder="0 if none"><div class="hint">EWC classification recommended (§163)</div></div>
+  </div>
+</div>
+
+<div id="t_materials" class="stab">
+  <div class="notice info">B7 §38(c) — Required for NACE Section C manufacturing (§174). Report total weight per key material (§173).</div>
+  <div class="grid3">
+    <div class="field"><label>Material 1 name</label><input id="m_1n" value="${fv('m_1n')}" placeholder="e.g. Paper raw materials"></div>
+    <div class="field"><label>Quantity (tonnes)</label><input id="m_1q" type="number" value="${fv('m_1q')}" placeholder="e.g. 85"></div>
+    <div class="field"><label>Recycled content (%)</label><input id="m_1r" type="number" value="${fv('m_1r')}" placeholder="e.g. 35"><div class="hint"><select id="m_1cert" style="font-size:11px;margin-top:3px"><option value="estimate">Estimate</option><option value="FSC Recycled">FSC certified</option><option value="PEFC">PEFC certified</option><option value="supplier declaration">Supplier declaration</option></select></div></div>
+  </div>
+  <div class="grid3">
+    <div class="field"><label>Material 2 name</label><input id="m_2n" value="${fv('m_2n')}" placeholder="e.g. Plastic packaging"></div>
+    <div class="field"><label>Quantity (tonnes)</label><input id="m_2q" type="number" value="${fv('m_2q')}" placeholder="e.g. 1.8"></div>
+    <div class="field"><label>Polymer type</label><input id="m_2t" value="${fv('m_2t')}" placeholder="e.g. LDPE, PP, PET"></div>
+  </div>
+  <div class="field"><label>Circular economy practices (§37)</label><textarea id="m_ce" placeholder="Describe how you apply CE principles: recycled content, reusability, waste reduction…">${fv('m_ce')}</textarea></div>
+</div>
+
+<div id="t_transport" class="stab">
+  <div class="notice info">Delivery vehicle fuel = Scope 1 (B3 §29). Diesel litres need §89 MWh conversion before the §29 table can be finalised.</div>
+  <div class="grid3">
+    <div class="field"><label>Number of vehicles</label><input id="tr_count" type="number" value="${fv('tr_count')}" placeholder="e.g. 3"></div>
+    <div class="field"><label>Fuel type</label><select id="tr_fuel"><option value="diesel">Diesel</option><option value="petrol">Petrol</option><option value="electric">Electric</option><option value="LPG">LPG</option></select></div>
+    <div class="field"><label>Fuel consumed (litres)</label><input id="tr_litres" type="number" value="${fv('tr_litres')}" placeholder="e.g. 4900"><div class="hint">§89 MWh conversion required</div></div>
+  </div>
+  <div class="field"><label>Distance travelled (km) — if recorded</label><input id="tr_km" type="number" value="${fv('tr_km')}" placeholder="Leave blank if not recorded"></div>
+</div>
+
+<div class="btn-row"><button class="btn-secondary" onclick="prevStep()">← Back</button><button class="btn-primary" onclick="sub2()">Continue to practices & policy →</button></div>`;
+log('sys','Step 2 loaded: Environmental data input (B3–B7)'); }
+
+function showTab(id,btn){ document.querySelectorAll('.stab').forEach(t=>t.classList.remove('show')); document.getElementById(id).classList.add('show'); document.querySelectorAll('.snav button').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); log('human',`Navigated to tab: ${id}`); }
+function sub2(){ sv(); log('human',`Env. data: elec=${gv('e_elec')} kWh, gas=${gv('e_gas')} m³, water=${gv('w_m3')} m³`); nextStep(); }
+
+// ── STEP 3 ──────────────────────────────────────────────────────────────────
+function s3(c){ c.innerHTML=`
+<div class="step-header"><div class="step-eyebrow">Step 3 of 7</div><div class="step-title-main">Practices, policy & initiatives</div><div class="step-desc-main">VSME B2 §26 — describe what the company does (§26(a)), its policy (§26(b)), plans (§26(c)) and targets (§26(d)).</div></div>
+<div class="field"><label>A. Environmental practices in place (§26(a))</label><textarea id="pol_prac" placeholder="e.g. LED lighting, motion sensors, waste segregation, annual training, digital invoicing, management review">${fv('pol_prac')}</textarea></div>
+<div class="grid2">
+  <div class="field"><label>B. Environmental policy adopted? (§26(b))</label><div class="yn"><button class="y ${fv('pol_has')==='yes'?'sel':''}" data-yn="pol_has" data-val="yes" data-cls="y" onclick="yn('pol_has','yes','y')">Yes</button><button class="n ${fv('pol_has')==='no'?'sel':''}" data-yn="pol_has" data-val="no" data-cls="n" onclick="yn('pol_has','no','n')">No</button></div></div>
+  <div class="field"><label>Year adopted + what it covers</label><input id="pol_desc" value="${fv('pol_desc')}" placeholder="e.g. 2024 — energy reduction, recycled materials increase"></div>
+</div>
+<div class="grid2">
+  <div class="field"><label>Policy publicly available? (§26(b))</label><div class="yn"><button class="y ${fv('pol_pub')==='yes'?'sel':''}" data-yn="pol_pub" data-val="yes" data-cls="y" onclick="yn('pol_pub','yes','y')">Yes</button><button class="n ${fv('pol_pub')==='no'?'sel':''}" data-yn="pol_pub" data-val="no" data-cls="n" onclick="yn('pol_pub','no','n')">Not yet</button></div></div>
+  <div class="field"><label>C. Future initiatives (§26(c))</label><input id="pol_init" value="${fv('pol_init')}" placeholder="e.g. Solar panels 2027, fleet electrification review"></div>
+</div>
+<div class="field"><label>D. Quantified targets (§26(d)) — most critical B2 gap for most SMEs</label><div class="yn" style="margin-bottom:8px"><button class="y ${fv('pol_tgt')==='yes'?'sel':''}" data-yn="pol_tgt" data-val="yes" data-cls="y" onclick="yn('pol_tgt','yes','y')">Yes</button><button class="n ${fv('pol_tgt')==='no'?'sel':''}" data-yn="pol_tgt" data-val="no" data-cls="n" onclick="yn('pol_tgt','no','n')">Not yet</button></div><textarea id="pol_tgt_desc" placeholder="e.g. Reduce electricity by 15% by 2027 vs 2025 baseline; increase recycled content to 50% by 2026 — or leave blank">${fv('pol_tgt_desc')}</textarea></div>
+<div class="grid2">
+  <div class="field"><label>Biodiversity screening done? (B5 §33)</label><div class="yn"><button class="y ${fv('bio_done')==='yes'?'sel':''}" data-yn="bio_done" data-val="yes" data-cls="y" onclick="yn('bio_done','yes','y')">Yes</button><button class="n ${fv('bio_done')==='no'?'sel':''}" data-yn="bio_done" data-val="no" data-cls="n" onclick="yn('bio_done','no','n')">Not yet</button></div><input id="bio_result" style="margin-top:6px" value="${fv('bio_result')}" placeholder="e.g. No Natura 2000 site found within boundary (WDPA check)"></div>
+  <div class="field"><label>Climate risks identified? (C4 §57)</label><div class="yn"><button class="y ${fv('clim_risk')==='yes'?'sel':''}" data-yn="clim_risk" data-val="yes" data-cls="y" onclick="yn('clim_risk','yes','y')">Yes</button><button class="n ${fv('clim_risk')==='no'?'sel':''}" data-yn="clim_risk" data-val="no" data-cls="n" onclick="yn('clim_risk','no','n')">No formal assessment</button></div><input id="clim_desc" style="margin-top:6px" value="${fv('clim_desc')}" placeholder="e.g. Physical: Po Valley flooding; Transition: carbon pricing"></div>
+</div>
+<div class="btn-row"><button class="btn-secondary" onclick="prevStep()">← Back</button><button class="btn-primary" onclick="sub3()">Run AI analysis →</button></div>`;
+log('sys','Step 3 loaded: Practices, policy and initiatives (B2 §26)'); }
+
+function sub3(){ sv(); log('human',`Policy: has=${gv('pol_has')}, targets=${gv('pol_tgt')}, bio done=${gv('bio_done')}`); nextStep(); }
+
+// ── STEP 4 ──────────────────────────────────────────────────────────────────
+function s4(c){ c.innerHTML=`
+<div class="step-header"><div class="step-eyebrow">Step 4 of 7</div><div class="step-title-main">AI analysis — VSME mapping</div><div class="step-desc-main">The AI is assessing your inputs against all VSME Basic Module environmental disclosures B1–B7.</div></div>
+<div class="ai-panel"><div class="ai-head"><div class="ai-avatar">AI</div><div><div class="ai-name">VSME Analysis Engine</div><div class="ai-step-label">Mapping data to B1–B7 disclosures…</div></div><div id="ai4_status" style="margin-left:auto"><div class="spin"><span></span><span></span><span></span></div></div></div><div class="ai-body" id="ai4_out"><p style="color:var(--gray-mid);font-size:12px">Analysing your inputs…</p></div></div>
+<div id="s4_btns" style="display:none" class="btn-row"><button class="btn-secondary" onclick="prevStep()">← Back</button><button class="btn-primary" onclick="nextStep()">Generate draft report →</button></div>`;
+log('ai','Starting VSME disclosure readiness analysis across B1–B7');
+setTimeout(runAnalysis,600); }
+
+function runAnalysis(){
+  const d=STATE.data;
+  const tw=(+d.wst_gen||0)+(+d.wst_pap||0)+(+d.wst_pla||0);
+  const hasGhg=d.g_inv==='yes'&&(d.g_s1||d.g_s2);
+  const rows=[
+    {disc:'B1 — Basis for preparation',ref:'§24',miss:(!d.p_nace?'NACE code; ':'')+(!d.p_turnover?'Turnover (€); ':'')+(!d.p_geo?'Geolocation; ':''),ready:d.p_nace&&d.p_turnover?'ready':'partial'},
+    {disc:'B2 — Practices & policy',ref:'§26',miss:(d.pol_has!=='yes'?'Formal policy; ':'')+(!d.pol_tgt||d.pol_tgt!=='yes'?'Quantified targets (§26(d)); ':''),ready:d.pol_has==='yes'&&d.pol_tgt==='yes'?'ready':'partial'},
+    {disc:'B3 — Energy consumption',ref:'§29',miss:(!d.e_renew?'Renewable share (§84); ':'')+'MWh conversion required (§87/§89)',ready:d.e_elec?'partial':'notready'},
+    {disc:'B3 — GHG Scope 1 & 2',ref:'§30–31',miss:hasGhg?(!d.p_turnover?'Turnover for intensity §31':''):'No emission factors; activity data available',ready:hasGhg?'partial':'notready'},
+    {disc:'B4 — Pollution',ref:'§32 §110',miss:'Written IED 2.0 non-applicability confirmation (§111)',ready:'na'},
+    {disc:'B5 — Biodiversity',ref:'§33–34',miss:d.bio_done!=='yes'?'WDPA/IBAT desktop check required (§135)':'Confirm site area (ha); complete §137 table',ready:d.bio_done==='yes'?'partial':'notready'},
+    {disc:'B6 — Water withdrawal',ref:'§35–36',miss:(d.w_stress==='unk'||!d.w_stress?'WRI Aqueduct stress check (§156); ':'')+(!d.w_disch?'Discharge data (§152)':''),ready:d.w_m3?'partial':'notready'},
+    {disc:'B7 — Circular economy',ref:'§37 §159',miss:(!d.m_1r?'Recycled content data; ':d.m_1cert==='estimate'?'Certification needed; ':'')+(!d.m_ce?'CE practices description':''),ready:d.m_ce?'partial':'notready'},
+    {disc:'B7 — Waste generation',ref:'§38(a)',miss:`Route confirmation per stream (§169); ${d.wst_haz==='no'?'hazardous absence documentation (§162)':''}`,ready:tw>0?'partial':'notready'},
+    {disc:'B7 — Material mass-flow',ref:'§38(c)',miss:d.m_1cert==='estimate'?'Recycled content estimate — verify supplier docs; ':'',ready:d.m_1q?'partial':'notready'},
+  ];
+  const ready=rows.filter(r=>r.ready==='ready').length;
+  const partial=rows.filter(r=>r.ready==='partial').length;
+  const notready=rows.filter(r=>r.ready==='notready').length;
+  const na=rows.filter(r=>r.ready==='na').length;
+  STATE.aiOutputs={rows,ready,partial,notready,na};
+  const tagH=r=>{const m={'ready':'<span class="tag t-ready">Ready</span>','partial':'<span class="tag t-partial">Partially ready</span>','notready':'<span class="tag t-notready">Not ready</span>','na':'<span class="tag t-na">Not applicable</span>'};return m[r]||m.na;};
+  let tbl=`<table class="out-table"><thead><tr><th>Disclosure</th><th>Ref.</th><th>Key gaps</th><th>Readiness</th></tr></thead><tbody>`;
+  rows.forEach(r=>{tbl+=`<tr><td><b>${r.disc}</b></td><td>${r.ref}</td><td style="color:var(--amber-dark);font-size:11px">${r.miss||'None identified'}</td><td>${tagH(r.ready)}</td></tr>`;});
+  tbl+=`</tbody></table>`;
+  document.getElementById('ai4_out').innerHTML=`
+    <h4>Summary</h4>
+    <p><b>${d.p_anon==='yes'?'Anonymous company':d.p_name}</b> (${d.p_emp||'?'} employees, ${d.p_country||'?'}, ${d.p_year||'2025'}) assessed across 10 VSME Basic Module environmental disclosures. Result: <b>${ready} ready, ${partial} partially ready, ${notready} not ready,</b> ${na} not applicable.</p>
+    <h4>Disclosure readiness</h4>${tbl}
+    <h4>Priority actions</h4><ul>
+    ${!hasGhg?'<li><b>GHG inventory [B3 §30]:</b> Activity data available. Obtain emission factors from §102 sources (ADEME, IPCC, AIB, JRC). This is a mandatory disclosure and SFDR datapoint.</li>':''}
+    ${!d.e_renew?'<li><b>Renewable electricity [B3 §29]:</b> Request supply mix declaration from utility provider (§84).</li>':''}
+    ${d.bio_done!=='yes'?'<li><b>Biodiversity [B5 §33]:</b> Run WDPA/IBAT desktop check for facility location (§135).</li>':''}
+    ${(d.w_stress==='unk'||!d.w_stress)?'<li><b>Water stress [B6 §35]:</b> Run WRI Aqueduct Atlas check (§156). If >40%, disaggregate withdrawal.</li>':''}
+    ${d.pol_tgt!=='yes'?'<li><b>Targets [B2 §26(d)]:</b> Define quantified, time-bound environmental targets. Most significant B2 compliance gap.</li>':''}
+    </ul>`;
+  document.getElementById('ai4_status').innerHTML='<span style="color:var(--green-dark);font-size:12px;font-weight:600">✓ Complete</span>';
+  document.getElementById('s4_btns').style.display='flex';
+  log('ai',`Analysis: ${ready} ready, ${partial} partial, ${notready} not ready, ${na} N/A`);
+}
+
+// ── STEP 5 ──────────────────────────────────────────────────────────────────
+function s5(c){ const d=STATE.data; const tw=(+d.wst_gen||0)+(+d.wst_pap||0)+(+d.wst_pla||0); const cname=d.p_anon==='yes'?'the company (anonymized)':(d.p_name||'the company');
+c.innerHTML=`
+<div class="step-header"><div class="step-eyebrow">Step 5 of 7</div><div class="step-title-main">AI-generated draft report section</div><div class="step-desc-main"><span style="background:var(--amber-light);color:var(--amber-dark);padding:2px 8px;border-radius:6px;font-size:11px;font-weight:600">⚠ Human review required before publication</span></div></div>
+<div class="ai-panel"><div class="ai-head"><div class="ai-avatar">AI</div><div><div class="ai-name">Draft environmental report — ${d.p_year||'2025'}</div><div class="ai-step-label">VSME Basic Module B1–B7 · EFRAG December 2024</div></div></div>
+<div class="ai-body">
+<h4>B1/B2 — Environmental context and governance <span style="font-size:9px;font-weight:400;color:var(--green-dark)">[§24, §26–27]</span></h4>
+<p>${d.p_anon==='yes'?'The company (anonymized)':'<b>'+d.p_name+'</b>'} is a ${d.p_emp?d.p_emp+'-employee':''} ${d.p_sector||'manufacturing'} enterprise operating in ${d.p_region||d.p_country||'Italy'}, reporting for ${d.p_year||'2025'}. This report is prepared under the EFRAG VSME Standard (December 2024), Basic Module, Option A.${d.p_anon==='yes'?' Company name anonymized per management request.':''}</p>
+${d.pol_has==='yes'?`<p>${d.pol_desc||'An internal environmental policy has been adopted'}. The policy is ${d.pol_pub==='yes'?'publicly available':'not yet publicly available'} and is subject to annual management review.</p>`:'<p>No formal environmental policy has been adopted as of the reporting period — a gap against B2 §26(b).</p>'}
+${d.pol_prac?`<p>Practices in place during ${d.p_year||'the reporting period'}: ${d.pol_prac}. No quantitative evidence of measurable impact was available.</p>`:''}
+${d.pol_tgt==='yes'&&d.pol_tgt_desc?`<p><b>Environmental targets:</b> ${d.pol_tgt_desc}. <em>[Human verification: confirm targets are measurable and time-bound per §26(d).]</em></p>`:'<p>No quantified environmental targets have been established — a gap against §26(d). Measurable, time-bound targets are strongly recommended for the next reporting cycle.</p>'}
+<h4>B3 — Energy use <span style="font-size:9px;font-weight:400;color:var(--green-dark)">[§29, §82–89]</span></h4>
+${d.e_elec?`<p>Electricity consumption: <b>${Number(d.e_elec).toLocaleString()} kWh</b> (48.75 MWh direct). ${d.e_renew?'Renewable share: '+d.e_renew+'% (supply mix declaration).':'Renewable share unknown — obtain supply mix declaration from provider (§84).'} Source: ${d.e_src||'national grid'}.</p>`:'<p>No electricity data provided.</p>'}
+${d.e_gas?`<p>Natural gas: <b>${Number(d.e_gas).toLocaleString()} m³</b>. ${d.e_gas_mwh?'Converted: '+d.e_gas_mwh+' MWh (§87 applied).':'MWh conversion required per §87 before §29 table can be finalised.'}</p>`:''}
+${d.tr_litres?`<p>Transport fuel (${d.tr_count||'?'} vehicles, ${d.tr_fuel||'diesel'}): <b>${Number(d.tr_litres).toLocaleString()} litres</b>. MWh conversion required per §89.</p>`:''}
+${d.e_measures?`<p>Energy efficiency measures: ${d.e_measures}.</p>`:''}
+<p style="font-size:11px;font-style:italic;color:var(--amber-dark);">[Human verification: apply §87 (gas) and §89 (diesel) MWh conversions. Complete §29 renewable/non-renewable breakdown table.]</p>
+<h4>B3 — GHG emissions <span style="font-size:9px;font-weight:400;color:var(--green-dark)">[§30–31]</span></h4>
+${d.g_inv==='yes'&&(d.g_s1||d.g_s2)?`<p>Gross GHG emissions (${d.p_year||'2025'}): <b>Scope 1: ${d.g_s1||'?'} tCO₂eq</b>, <b>Scope 2 (location-based): ${d.g_s2||'?'} tCO₂eq</b>. Emission factor source: ${d.g_ef||'stated source'}. ${d.p_turnover?'GHG intensity (§31): '+(((+d.g_s1||0)+(+d.g_s2||0))/(+d.p_turnover)*1000000).toFixed(2)+' tCO₂eq per €1m turnover.':''}</p>`:`<p>No GHG inventory prepared. §30 requires estimated gross GHG in tCO₂eq (Scope 1: gas boiler + vehicles; Scope 2: electricity). Activity data is available. Approved emission factor sources (§102): ADEME Base Empreinte®, IPCC EF Database, AIB Residual Mix (Italian grid), JRC Historical EFs. ${d.g_reason?'Reason: '+d.g_reason+'.</p>':''}</p><p style="font-size:11px;color:var(--red-dark);font-style:italic;">[Priority gap — mandatory disclosure. No GHG figures published here. Obtain §102 emission factors and calculate before publication.]</p>`}
+<h4>B4 — Pollution <span style="font-size:9px;font-weight:400;color:var(--green-dark)">[§32, §110]</span></h4>
+<p>Based on available information, the company is not subject to IED 2.0 or E-PRTR reporting obligations. This disclosure is assessed as not applicable per §110. Written confirmation is required (§111).</p>
+<h4>B5 — Biodiversity <span style="font-size:9px;font-weight:400;color:var(--green-dark)">[§33, §134–141]</span></h4>
+${d.bio_done==='yes'?`<p>Biodiversity screening conducted. ${d.bio_result||'Result not stated.'}. Site area should be recorded in hectares; §137 table should be completed.</p>`:`<p>No biodiversity screening conducted. §33 requires sites in/near Natura 2000, UNESCO WHC and KBAs to be disclosed. A WDPA/IBAT desktop check (§135) is required for the ${d.p_region||d.p_country||'site'} location.</p>`}
+<h4>B6 — Water use <span style="font-size:9px;font-weight:400;color:var(--green-dark)">[§35–36]</span></h4>
+${d.w_m3?`<p>Water withdrawal: <b>${Number(d.w_m3).toLocaleString()} m³</b> from ${d.w_src||'municipal supply'}. Monitoring: ${d.w_mon||'utility invoices'}. ${d.w_stress==='no'?'Not in high water-stress area (WRI Aqueduct §156).':d.w_stress==='yes'?'Site in high water-stress area — disaggregation required (§35).':'Water stress not assessed — WRI Aqueduct check required (§156).'} ${d.w_disch?'Discharge: '+Number(d.w_disch).toLocaleString()+' m³. Consumption (§152): '+(+d.w_m3-(+d.w_disch))+' m³.':'Discharge not quantified — §152 calculation pending.'}</p>`:'<p>No water data provided.</p>'}
+<h4>B7 — Resource use, CE and waste <span style="font-size:9px;font-weight:400;color:var(--green-dark)">[§37–38]</span></h4>
+${d.m_ce?`<p>Circular economy practices (§37): ${d.m_ce}.</p>`:''}
+${d.m_1q?`<p>Materials (§38(c), §173–174 — NACE ${d.p_nace||'Section C'} manufacturing): ${d.m_1n||'Material 1'}: <b>${d.m_1q} tonnes</b> (${d.m_1r?d.m_1r+'% recycled, '+d.m_1cert:'recycled content not stated'})${d.m_2q?'; '+d.m_2n+': '+d.m_2q+' t'+(d.m_2t?' ('+d.m_2t+')':''):''}</p>`:''}
+${tw>0?`<p>Total waste: <b>${tw.toLocaleString()} kg</b> (non-hazardous). ${d.wst_haz==='no'?'No hazardous waste (§162 confirmation required)':''}</p><table class="out-table"><thead><tr><th>Stream</th><th>kg</th><th>Route</th></tr></thead><tbody>${d.wst_gen?`<tr><td>General</td><td>${Number(d.wst_gen).toLocaleString()}</td><td>${d.wst_gen_r||'Not confirmed'}</td></tr>`:''} ${d.wst_pap?`<tr><td>Paper/card</td><td>${Number(d.wst_pap).toLocaleString()}</td><td>${d.wst_pap_r||'Not confirmed'}</td></tr>`:''} ${d.wst_pla?`<tr><td>Plastics</td><td>${Number(d.wst_pla).toLocaleString()}</td><td>${d.wst_pla_r||'Not confirmed'}</td></tr>`:''}</tbody></table>`:''}
+</div>
+<div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--border)"><div style="font-size:11px;color:var(--gray-mid);margin-bottom:6px">Rate this draft:</div><div style="display:flex;gap:6px;flex-wrap:wrap">${['Excellent','Good','Needs work','Poor'].map(r=>`<button onclick="rateDraft('${r}',this)" style="font-size:11px;padding:4px 10px;border:1.5px solid var(--border);border-radius:6px;background:white;cursor:pointer;font-family:var(--font)">${r}</button>`).join('')}</div></div>
+</div>
+<div class="btn-row"><button class="btn-secondary" onclick="prevStep()">← Back</button><button class="btn-primary" onclick="nextStep()">Proceed to human review →</button></div>`;
+log('ai',`Draft report generated for ${d.p_name||'anonymous company'} — ${d.p_year||'2025'}`); }
+
+function rateDraft(r,btn){ btn.closest('div').querySelectorAll('button').forEach(b=>b.style.background='white'); btn.style.background='var(--green-light)'; btn.style.borderColor='var(--green-mid)'; STATE.data.draft_rating=r; log('human',`Draft rated: "${r}"`); }
+
+// ── STEP 6 ──────────────────────────────────────────────────────────────────
+function s6(c){ c.innerHTML=`
+<div class="step-header"><div class="step-eyebrow">Step 6 of 7</div><div class="step-title-main">Human review & correction</div><div class="step-desc-main">Document your corrections to the AI draft. This is the core human-AI interaction data for the thesis study — be specific.</div></div>
+<div class="notice pu">Your corrections here are research data. Every edit enriches the human-AI collaboration analysis in the thesis.</div>
+<div class="field"><label>Overall assessment of AI draft</label><div class="yn" style="flex-wrap:wrap"><button class="y ${fv('rev_overall')==='minor'?'sel':''}" data-yn="rev_overall" data-val="minor" data-cls="y" onclick="yn('rev_overall','minor','y')">Ready — minor edits only</button><button class="u ${fv('rev_overall')==='major'?'sel':''}" data-yn="rev_overall" data-val="major" data-cls="u" onclick="yn('rev_overall','major','u')">Needs major revision</button><button class="n ${fv('rev_overall')==='rewrite'?'sel':''}" data-yn="rev_overall" data-val="rewrite" data-cls="n" onclick="yn('rev_overall','rewrite','n')">Must rewrite</button></div></div>
+<div class="grid2">
+  <div class="field"><label>Energy section corrections (B3)</label><textarea id="corr_energy" placeholder="e.g. Corrected MWh: gas 65.4 MWh (§87), diesel 44.7 MWh (§89); renewable share confirmed 40%">${fv('corr_energy')}</textarea></div>
+  <div class="field"><label>GHG section corrections (B3)</label><textarea id="corr_ghg" placeholder="e.g. Scope 1 = 14.2 tCO₂eq (gas 11.7 + diesel 2.5); Scope 2 = 8.5 using AIB Italian EF 0.174">${fv('corr_ghg')}</textarea></div>
+  <div class="field"><label>Water section corrections (B6)</label><textarea id="corr_water" placeholder="e.g. WRI Aqueduct Po basin = 28% — low-medium; no stressed-site disaggregation required">${fv('corr_water')}</textarea></div>
+  <div class="field"><label>Waste section corrections (B7)</label><textarea id="corr_waste" placeholder="e.g. Contractor confirmed: paper → Recycler X; plastics → Sorting Y; general → licensed landfill">${fv('corr_waste')}</textarea></div>
+  <div class="field"><label>Materials corrections (B7)</label><textarea id="corr_mat" placeholder="e.g. Recycled content verified via FSC Recycled cert; plastic type confirmed LDPE">${fv('corr_mat')}</textarea></div>
+  <div class="field"><label>Biodiversity corrections (B5)</label><textarea id="corr_bio" placeholder="e.g. WDPA check: no Natura 2000 within 2 km; site area = 0.35 ha; §137 table completed">${fv('corr_bio')}</textarea></div>
+</div>
+<div class="field"><label>Factual errors or hallucinations found in AI output</label><textarea id="ai_errors" placeholder="Document any incorrect statements, wrong standard references, or invented data — critical for thesis accuracy analysis">${fv('ai_errors')}</textarea></div>
+<div class="field"><label>What the AI got right without correction</label><textarea id="ai_correct" placeholder="e.g. Correctly identified §31 gap; accurately flagged B5 biodiversity gap; correct B4 non-applicability">${fv('ai_correct')}</textarea></div>
+<div class="grid2">
+  <div class="field"><label>Perceived usefulness (1 = not useful, 5 = very useful)</label><div class="yn">${[1,2,3,4,5].map(n=>`<button class="${fv('usefulness')===String(n)?'y sel':'y'}" data-yn="usefulness" data-val="${n}" data-cls="y" onclick="yn('usefulness','${n}','y')">${n}</button>`).join('')}</div></div>
+  <div class="field"><label>Estimated time saved vs. manual preparation</label><select id="time_saved"><option value="">Select…</option><option>No time saved</option><option>Less than 1 hour</option><option>1–3 hours</option><option>3–8 hours</option><option>More than 1 working day</option></select></div>
+</div>
+<div class="field"><label>Open comments for thesis</label><textarea id="open_comments" placeholder="Any other observations about the agent's behaviour, reasoning quality, or improvements needed">${fv('open_comments')}</textarea></div>
+<div class="btn-row"><button class="btn-secondary" onclick="prevStep()">← Back</button><button class="btn-primary" onclick="sub6()">Finalise & view results →</button></div>`;
+log('sys','Step 6 loaded: Human review and correction form'); }
+
+function sub6(){ sv(); const corrs=[gv('corr_energy'),gv('corr_ghg'),gv('corr_water'),gv('corr_waste'),gv('corr_mat'),gv('corr_bio')].filter(Boolean).length; log('human',`Review: overall="${gv('rev_overall')}", ${corrs} sections corrected, usefulness=${gv('usefulness')}/5, time saved="${gv('time_saved')}"`); if(gv('ai_errors')) log('human','AI errors: '+gv('ai_errors').substring(0,80)); nextStep(); }
+
+// ── STEP 7 ──────────────────────────────────────────────────────────────────
+function s7(c){ const d=STATE.data; const ao=STATE.aiOutputs; const corrs=[d.corr_energy,d.corr_ghg,d.corr_water,d.corr_waste,d.corr_mat,d.corr_bio].filter(Boolean).length; const dur=Math.floor((Date.now()-STATE.t0)/60000); const total=STATE.log.length; const human=STATE.log.filter(l=>l.actor==='human').length; const ai=STATE.log.filter(l=>l.actor==='ai').length; const cov=ao.ready&&ao.partial?(Math.round(((ao.ready+ao.partial)/(ao.ready+ao.partial+(ao.notready||0)+(ao.na||0)))*100)):0;
+c.innerHTML=`
+<div class="step-header"><div class="step-eyebrow">Step 7 of 7 — Research evaluation</div><div class="step-title-main">Prototype study results</div><div class="step-desc-main">Quantitative summary for thesis analysis on AI-assisted VSME environmental reporting.</div></div>
+<div class="eval-grid">
+  <div class="eval-card"><div class="eval-card-label">Session duration</div><div class="eval-card-val">${dur} min</div><div class="eval-card-sub">Full pipeline completion</div></div>
+  <div class="eval-card"><div class="eval-card-label">Total interactions</div><div class="eval-card-val">${total}</div><div class="eval-card-sub">Human: ${human} · AI: ${ai}</div></div>
+  <div class="eval-card"><div class="eval-card-label">Perceived usefulness</div><div class="eval-card-val">${d.usefulness?d.usefulness+'/5':'—'}</div><div class="eval-card-sub">${['','Very low','Low','Moderate','High','Very high'][+d.usefulness||0]||'Not rated'}</div></div>
+  <div class="eval-card"><div class="eval-card-label">Time saved</div><div class="eval-card-val" style="font-size:15px">${d.time_saved||'—'}</div><div class="eval-card-sub">vs. manual preparation</div></div>
+  <div class="eval-card"><div class="eval-card-label">VSME coverage</div><div class="eval-card-val">${cov}%</div><div class="eval-card-sub">Ready + partial disclosures<div class="score-bar"><div class="score-fill" style="width:${cov}%"></div></div></div></div>
+  <div class="eval-card"><div class="eval-card-label">Ready to report</div><div class="eval-card-val" style="color:#3B6D11">${ao.ready||0}</div><div class="eval-card-sub">disclosures with sufficient data</div></div>
+  <div class="eval-card"><div class="eval-card-label">Data gaps</div><div class="eval-card-val" style="color:var(--red-dark)">${ao.notready||0}</div><div class="eval-card-sub">disclosures not ready</div></div>
+  <div class="eval-card"><div class="eval-card-label">Sections corrected</div><div class="eval-card-val">${corrs} / 6</div><div class="eval-card-sub">${corrs===0?'No corrections':corrs<=2?'Minor corrections':'Significant human edit'}</div></div>
+</div>
+<div style="font-size:12px;font-weight:700;color:var(--gray-mid);text-transform:uppercase;letter-spacing:.06em;margin:18px 0 10px">Research variables</div>
+<table class="out-table"><thead><tr><th>Variable</th><th>Value</th><th>Thesis relevance</th></tr></thead><tbody>
+<tr><td>Company size</td><td>${d.p_emp||'?'} employees</td><td>VSME §2(b) classification; controls for SME size effect</td></tr>
+<tr><td>Data completeness</td><td>${cov}% VSME coverage</td><td>Measures AI capability with partial data input</td></tr>
+<tr><td>Human correction rate</td><td>${Math.round((corrs/6)*100)}% of sections</td><td>Core H2: necessity of human oversight in AI-assisted reporting</td></tr>
+<tr><td>Perceived usefulness</td><td>${d.usefulness||'—'}/5</td><td>SUS-proxy measure of human-AI interaction quality</td></tr>
+<tr><td>GHG gap present</td><td>${d.g_inv==='yes'?'No — inventory prepared':'Yes — no inventory'}</td><td>Most common SME barrier to full VSME compliance</td></tr>
+<tr><td>Greenwashing risk</td><td>${d.m_1cert==='estimate'?'Present (uncertified claim)':'Low (data verified)'}</td><td>AI caution vs. promotional language risk</td></tr>
+<tr><td>Session duration</td><td>${dur} min</td><td>Efficiency vs. manual baseline estimate</td></tr>
+<tr><td>AI errors found</td><td>${d.ai_errors?'Yes':'None documented'}</td><td>Accuracy of VSME standard mapping by AI</td></tr>
+</tbody></table>
+${d.open_comments?`<div class="notice info" style="margin-top:12px"><b>Evaluator comments:</b> ${d.open_comments}</div>`:''}
+<div class="btn-row" style="margin-top:18px">
+  <button class="btn-secondary" onclick="exportLog()">📥 Export interaction log</button>
+  <button class="btn-primary" onclick="alert('To generate a PDF, take this data to your Claude conversation and use the PDF generator tool.')">📄 Generate PDF report</button>
+</div>
+<div class="notice info" style="margin-top:14px;font-size:12px">This prototype demonstrates a 7-step agentic pipeline for AI-assisted VSME environmental sustainability reporting. The interaction log, readiness data, correction patterns and usability ratings constitute the primary empirical data for the thesis study.</div>`;
+log('sys',`Session complete: ${dur} min, ${total} interactions, ${cov}% coverage, usefulness ${d.usefulness||'—'}/5`); }
+
+// ── Boot ──────────────────────────────────────────────────────────────────────
+log('sys','VSME Agent prototype initialised — EFRAG VSME Standard December 2024 — B1–B7 environmental section');
+log('sys','Interaction logging active');
+render();
+</script>
+</body>
+</html>
